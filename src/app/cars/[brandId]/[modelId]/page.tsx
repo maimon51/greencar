@@ -29,15 +29,15 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
         <span>/</span>
         <Link href={`/brands/${brandId}`} className="hover:text-white">{carModel.manufacturer.name}</Link>
         <span>/</span>
-        <span className="text-[#00ff9d]">{carModel.name}</span>
+        <span className="text-[#00ff9d]">{carModel.commercialName || carModel.name}</span>
       </nav>
 
       {/* Header */}
       <div className="glass-panel p-8 md:p-12 rounded-3xl mb-12 relative overflow-hidden border border-white/10">
         <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-[#00ff9d]/10 to-transparent blur-3xl rounded-full pointer-events-none" />
-        <h1 className="text-4xl md:text-6xl font-black mb-2 relative z-10">{carModel.manufacturer.name} {carModel.name}</h1>
-        {carModel.commercialName && (
-          <p className="text-2xl text-gray-400 relative z-10">{carModel.commercialName}</p>
+        <h1 className="text-4xl md:text-6xl font-black mb-2 relative z-10">{carModel.manufacturer.name} {carModel.commercialName || carModel.name}</h1>
+        {carModel.commercialName && carModel.commercialName !== carModel.name && (
+          <p className="text-2xl text-gray-400 relative z-10">קוד דגם: {carModel.name}</p>
         )}
       </div>
 

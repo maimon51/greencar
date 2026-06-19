@@ -11,8 +11,9 @@ model Manufacturer {
   code      Int        @unique // tozeret_cd from gov.il
   name      String     // tozeret_nm
   country   String?    // tozeret_eretz_nm
-  models    CarModel[]
-  createdAt DateTime   @default(now())
+  models         CarModel[]
+  activeVehicles ActiveVehicle[]
+  createdAt      DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
 
@@ -23,7 +24,15 @@ model CarModel {
   code           Int          // degem_cd
   name           String       // degem_nm
   commercialName String?      // kinuy_mishari
+  
+  // Enriched content
+  imageUrl       String?
+  description    String?
+  
   trims          TrimLevel[]
+  activeVehicles ActiveVehicle[]
+  recalls        Recall[]
+  
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -65,4 +74,32 @@ model TrimLevel {
   updatedAt      DateTime @updatedAt
 
   @@unique([carModelId, name, year])
+}
+
+model ActiveVehicle {
+  id             Int          @id @default(autoincrement())
+  licensePlate   String       @unique // mispar_rechev
+  manufacturerId Int
+  manufacturer   Manufacturer @relation(fields: [manufacturerId], references: [id])
+  carModelId     Int
+  carModel       CarModel     @relation(fields: [carModelId], references: [id])
+  
+  color          String?      // tzeva_rechev
+  testExpiry     DateTime?    // tokef_dt
+  year           Int?         // shnat_yitzur
+  ownership      String?      // baalut
+  trimName       String?      // ramat_gimur (from registry)
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Recall {
+  id             Int          @id @default(autoincrement())
+  carModelId     Int
+  carModel       CarModel     @relation(fields: [carModelId], references: [id])
+  description    String
+  date           DateTime?
+
+  createdAt      DateTime     @default(now())
 }

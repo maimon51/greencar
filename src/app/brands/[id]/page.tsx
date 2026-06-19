@@ -44,9 +44,9 @@ export default async function BrandPage({ params }: { params: Promise<{ id: stri
             href={`/cars/${brand.id}/${model.id}`}
             className="glass-panel p-6 rounded-2xl hover:border-[#00ff9d]/50 hover:bg-white/10 transition-all group"
           >
-            <h3 className="text-2xl font-bold group-hover:text-[#00ff9d] transition-colors">{model.name}</h3>
+            <h3 className="text-2xl font-bold group-hover:text-[#00ff9d] transition-colors">{model.commercialName || model.name}</h3>
             {model.commercialName && model.commercialName !== model.name && (
-              <p className="text-gray-400 mt-1">{model.commercialName}</p>
+              <p className="text-gray-400 mt-1 text-sm">קוד דגם: {model.name}</p>
             )}
             <div className="mt-6 flex justify-between items-center text-sm">
               <span className="bg-black/50 px-3 py-1 rounded-full text-gray-300">
