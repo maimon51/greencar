@@ -33,11 +33,28 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
       </nav>
 
       {/* Header */}
-      <div className="glass-panel p-8 md:p-12 rounded-3xl mb-12 relative overflow-hidden border border-white/10">
+      <div className="glass-panel p-8 md:p-12 rounded-3xl mb-12 relative overflow-hidden border border-white/10 flex flex-col md:flex-row gap-8 items-center">
         <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-[#00ff9d]/10 to-transparent blur-3xl rounded-full pointer-events-none" />
-        <h1 className="text-4xl md:text-6xl font-black mb-2 relative z-10">{carModel.manufacturer.name} {carModel.commercialName || carModel.name}</h1>
-        {carModel.commercialName && carModel.commercialName !== carModel.name && (
-          <p className="text-2xl text-gray-400 relative z-10">קוד דגם: {carModel.name}</p>
+        
+        <div className="flex-1 relative z-10">
+          <h1 className="text-4xl md:text-6xl font-black mb-2">{carModel.manufacturer.name} {carModel.commercialName || carModel.name}</h1>
+          {carModel.commercialName && carModel.commercialName !== carModel.name && (
+            <p className="text-xl text-gray-400 mb-4">קוד דגם: {carModel.name}</p>
+          )}
+          
+          {carModel.description && (
+            <p className="text-gray-300 leading-relaxed max-w-2xl mt-4">
+              {carModel.description}
+            </p>
+          )}
+        </div>
+
+        {carModel.imageUrl && (
+          <div className="w-full md:w-1/3 relative z-10 flex justify-center">
+            <div className="relative w-full max-w-sm rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(255,255,255,0.1)] border border-white/10 bg-white/5">
+              <img src={carModel.imageUrl} alt={carModel.name} className="w-full h-auto object-cover hover:scale-105 transition-transform duration-500" />
+            </div>
+          </div>
         )}
       </div>
 
