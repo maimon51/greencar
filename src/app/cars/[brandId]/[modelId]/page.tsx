@@ -13,6 +13,7 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
     where: { id: modelId },
     include: {
       manufacturer: true,
+      recalls: true,
       trims: {
         orderBy: { year: 'desc' }
       }
@@ -117,6 +118,24 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
           <div className="text-gray-500 text-center py-10">לא נמצאו רמות גימור לדגם זה.</div>
         )}
       </div>
+
+      {/* Recalls Section */}
+      {carModel.recalls && carModel.recalls.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-red-400">
+            <span className="w-2 h-6 rounded-full bg-red-500"></span>
+            קריאות שירות (Recalls) בטיחותיות
+          </h2>
+          <div className="space-y-4">
+            {carModel.recalls.map(recall => (
+              <div key={recall.id} className="glass-panel p-6 border-r-4 border-red-500 rounded-lg">
+                <p className="font-medium text-lg">{recall.description}</p>
+                {recall.date && <p className="text-sm text-gray-400 mt-2">פורסם ב: {new Date(recall.date).toLocaleDateString('he-IL')}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Marketing CTA for Greencar */}
       <div className="mt-16 p-8 rounded-2xl border border-[#00ff9d]/30 bg-[#00ff9d]/5 text-center">
