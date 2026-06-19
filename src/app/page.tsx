@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { searchLicensePlate } from "./actions";
 
 export const revalidate = 3600; 
 
@@ -25,16 +26,19 @@ export default async function Home() {
         </p>
         
         {/* Search Mockup */}
-        <div className="max-w-2xl mx-auto flex gap-4">
+        <form action={searchLicensePlate} className="max-w-2xl mx-auto flex gap-4">
           <input 
-            type="text" 
-            placeholder="חפש לפי דגם או מספר רישוי..." 
+            type="text"
+            name="plate" 
+            required
+            placeholder="הכנס מספר רישוי..." 
             className="flex-1 bg-white/10 border border-white/20 rounded-full px-6 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff9d] focus:ring-1 focus:ring-[#00ff9d] transition-all"
+            style={{ direction: 'ltr', textAlign: 'right' }}
           />
-          <button className="bg-gradient-to-r from-[#00ff9d] to-[#00b8ff] text-black font-bold px-8 py-4 rounded-full hover:shadow-[0_0_30px_var(--color-primary-glow)] transition-all hover:scale-105">
+          <button type="submit" className="bg-gradient-to-r from-[#00ff9d] to-[#00b8ff] text-black font-bold px-8 py-4 rounded-full hover:shadow-[0_0_30px_var(--color-primary-glow)] transition-all hover:scale-105">
             חפש
           </button>
-        </div>
+        </form>
       </div>
 
       {/* Brands Grid */}
