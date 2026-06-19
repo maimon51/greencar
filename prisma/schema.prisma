@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model Manufacturer {
+  id        Int        @id @default(autoincrement())
+  code      Int        @unique // tozeret_cd from gov.il
+  name      String     // tozeret_nm
+  country   String?    // tozeret_eretz_nm
+  models    CarModel[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CarModel {
+  id             Int          @id @default(autoincrement())
+  manufacturerId Int
+  manufacturer   Manufacturer @relation(fields: [manufacturerId], references: [id])
+  code           Int          // degem_cd
+  name           String       // degem_nm
+  commercialName String?      // kinuy_mishari
+  trims          TrimLevel[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([manufacturerId, code])
+}
+
+model TrimLevel {
+  id             Int      @id @default(autoincrement())
+  carModelId     Int
+  carModel       CarModel @relation(fields: [carModelId], references: [id])
+  name           String   // ramat_gimur
+  year           Int      // shnat_yitzur
+  
+  // Performance & Specs
+  engineSize     Int?     // nefah_manoa
+  horsepower     Int?     // koah_sus
+  fuelType       String?  // delek_nm
+  gearbox        String?  // automatic_ind
+  weight         Int?     // mishkal_kolel
+  seats          Int?     // mispar_moshavim
+  doors          Int?     // mispar_dlatot
+  
+  // Safety Features (boolean flags based on API indicators)
+  abs            Boolean  @default(false)
+  airbags        Int      @default(0) // mispar_kariot_avir
+  adaptiveCruise Boolean  @default(false) // bakarat_shyut_adaptivit_ind
+  laneDeparture  Boolean  @default(false) // bakarat_stiya_menativ_ind
+  blindSpot      Boolean  @default(false) // zihuy_beshetah_nistar_ind
+  autoBrake      Boolean  @default(false) // maarechet_ezer_labalam_ind
+  pedestrianId   Boolean  @default(false) // zihuy_holchey_regel_ind
+  reverseCamera  Boolean  @default(false) // matzlemat_reverse_ind
+  safetyScore    Float?   // nikud_betihut
+
+  // Eco
+  greenIndex     Int?     // madad_yarok
+  co2Wltp        Float?   // CO2_WLTP
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([carModelId, name, year])
+}

@@ -1,65 +1,76 @@
-import Image from "next/image";
+import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 
-export default function Home() {
+export const revalidate = 3600; 
+
+export default async function Home() {
+  const manufacturers = await prisma.manufacturer.findMany({
+    where: { models: { some: {} } },
+    include: { _count: { select: { models: true } } },
+    orderBy: { models: { _count: 'desc' } },
+    take: 12,
+  });
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="max-w-7xl mx-auto px-6 py-12">
+      {/* Hero Section */}
+      <div className="relative rounded-3xl overflow-hidden glass-panel p-12 md:p-24 text-center mb-16 border border-white/10">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#00ff9d]/10 to-transparent pointer-events-none" />
+        
+        <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight drop-shadow-xl text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">
+          מאגר הרכבים <br className="hidden md:block"/> הגדול בישראל
+        </h1>
+        <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10">
+          מפרט טכני מלא, רמות גימור, ודירוגי בטיחות לכל רכב שעלה על הכביש בישראל.
+        </p>
+        
+        {/* Search Mockup */}
+        <div className="max-w-2xl mx-auto flex gap-4">
+          <input 
+            type="text" 
+            placeholder="חפש לפי דגם או מספר רישוי..." 
+            className="flex-1 bg-white/10 border border-white/20 rounded-full px-6 py-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff9d] focus:ring-1 focus:ring-[#00ff9d] transition-all"
+          />
+          <button className="bg-gradient-to-r from-[#00ff9d] to-[#00b8ff] text-black font-bold px-8 py-4 rounded-full hover:shadow-[0_0_30px_var(--color-primary-glow)] transition-all hover:scale-105">
+            חפש
+          </button>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </div>
+
+      {/* Brands Grid */}
+      <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
+        <span className="w-2 h-8 rounded-full bg-[#00ff9d]"></span>
+        יצרנים פופולריים
+      </h2>
+      
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {manufacturers.map((brand) => (
+          <Link 
+            key={brand.id} 
+            href={`/brands/${brand.id}`}
+            className="glass-panel p-6 rounded-2xl hover:-translate-y-2 hover:border-[#00ff9d]/50 transition-all group flex flex-col items-center text-center cursor-pointer"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:bg-[#00ff9d]/10 transition-colors">
+              <span className="text-2xl font-bold text-gray-300 group-hover:text-[#00ff9d]">{brand.name.charAt(0)}</span>
+            </div>
+            <h3 className="font-bold text-xl mb-1">{brand.name}</h3>
+            <span className="text-sm text-gray-500">{brand._count.models} דגמים</span>
+          </Link>
+        ))}
+      </div>
+      
+      {/* Marketing CTA */}
+      <div className="mt-24 p-1 rounded-3xl bg-gradient-to-r from-[#00ff9d] to-[#00b8ff]">
+        <div className="bg-black/90 backdrop-blur-xl rounded-[23px] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between">
+          <div>
+            <h3 className="text-3xl font-bold mb-2">מחפשים רכב לרכישה?</h3>
+            <p className="text-gray-400">בואו לראות את המלאי המעודכן שלנו ב-Greencar עם רכבים שמורים באחריות.</p>
+          </div>
+          <button className="mt-6 md:mt-0 bg-white text-black px-8 py-4 rounded-full font-bold hover:scale-105 transition-transform">
+            למלאי הרכבים
+          </button>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
