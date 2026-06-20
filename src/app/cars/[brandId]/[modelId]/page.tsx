@@ -156,13 +156,34 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
         </div>
       )}
 
-      {/* Marketing CTA for Greencar */}
-      <div className="mt-16 p-8 rounded-2xl border border-[#00ff9d]/30 bg-[#00ff9d]/5 text-center">
-        <h3 className="text-2xl font-bold mb-4">מעוניינים ב{cleanName} {searchName}?</h3>
-        <p className="text-gray-300 mb-6">לסוכנות Greencar יש מבחר רכבים במצב תצוגה. השאירו פרטים ונחזור אליכם.</p>
-        <button className="bg-[#00ff9d] text-black font-bold px-8 py-3 rounded-full hover:shadow-[0_0_20px_var(--color-primary-glow)] transition-all hover:scale-105">
-          בדוק זמינות במלאי
-        </button>
+      {/* Official Marketing CTA for Greencar */}
+      <div className="mt-16 p-1 rounded-3xl bg-gradient-to-r from-[#00ff9d]/50 to-transparent">
+        <div className="bg-[#05100c] p-8 md:p-12 rounded-[23px] text-center md:text-right flex flex-col md:flex-row items-center gap-8 justify-between relative overflow-hidden">
+          <div className="z-10 flex-1">
+            <h3 className="text-2xl md:text-3xl font-bold mb-4">
+              מעוניינים ב{cleanName} {searchName}?
+            </h3>
+            <p className="text-gray-300 mb-6 text-lg">
+              לסוכנות הרכב <span className="text-[#00ff9d] font-bold">גרינקאר</span> יש מבחר ענק של רכבים במצב תצוגה, כולל אפשרויות טרייד-אין ומימון נוח. השאירו פרטים ונחזור אליכם, או הגיעו לסניף שלנו!
+            </p>
+            <div className="flex flex-wrap justify-center md:justify-start gap-6 text-sm text-gray-400">
+              <span className="flex items-center gap-2">📍 הרצל 28, ראשון לציון</span>
+              <span className="flex items-center gap-2">📞 <span className="text-white font-bold text-lg">*8523</span></span>
+            </div>
+          </div>
+          
+          <div className="z-10 flex flex-col gap-4 w-full md:w-auto">
+            <a 
+              href="https://www.green-car.co.il/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-[#00ff9d] text-black font-bold px-10 py-4 rounded-full text-center hover:shadow-[0_0_30px_rgba(0,255,157,0.3)] transition-all hover:scale-105"
+            >
+              בדוק זמינות במלאי
+            </a>
+            <img src="https://www.green-car.co.il/sites/default/files/ua.png" alt="גרינקאר" className="h-8 mx-auto mt-2 opacity-80" />
+          </div>
+        </div>
       </div>
     </div>
   );

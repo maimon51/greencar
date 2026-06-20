@@ -89,16 +89,43 @@ export default async function Home() {
           ))}
       </div>
       
-      {/* Marketing CTA */}
+      {/* Official Green Car Marketing CTA */}
       <div className="mt-24 p-1 rounded-3xl bg-gradient-to-r from-[#00ff9d] to-[#00b8ff]">
-        <div className="bg-black/90 backdrop-blur-xl rounded-[23px] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between">
-          <div>
-            <h3 className="text-3xl font-bold mb-2">מחפשים רכב לרכישה?</h3>
-            <p className="text-gray-400">בואו לראות את המלאי המעודכן שלנו ב-Greencar עם רכבים שמורים באחריות.</p>
+        <div className="bg-black/90 backdrop-blur-xl rounded-[23px] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+          <div className="absolute opacity-10 right-0 top-0 pointer-events-none">
+            <img src="https://www.green-car.co.il/sites/default/files/ua.png" alt="Green Car Background" className="w-64 h-auto" />
           </div>
-          <button className="mt-6 md:mt-0 bg-white text-black px-8 py-4 rounded-full font-bold hover:scale-105 transition-transform">
-            למלאי הרכבים
-          </button>
+          
+          <div className="z-10 flex-1">
+            <div className="flex items-center gap-4 mb-4">
+              <img src="https://www.green-car.co.il/sites/default/files/ua.png" alt="גרינקאר" className="h-12 bg-white/10 p-2 rounded-lg" />
+              <h3 className="text-3xl font-bold">מחפשים רכב לרכישה?</h3>
+            </div>
+            <p className="text-gray-300 text-lg mb-4">
+              בואו לראות את המלאי המעודכן שלנו בסוכנות הרכב <span className="text-[#00ff9d] font-bold">גרינקאר</span>. אנו מציעים רכבים שמורים באחריות מקיפה, אפשרויות טרייד-אין ותנאי מימון מעולים.
+            </p>
+            <div className="flex flex-wrap gap-6 text-sm text-gray-400">
+              <span className="flex items-center gap-2">📍 הרצל 28, ראשון לציון</span>
+              <span className="flex items-center gap-2">📞 חייגו אלינו: <span className="text-white font-bold text-lg">*8523</span></span>
+            </div>
+          </div>
+          
+          <div className="z-10 mt-6 md:mt-0 flex flex-col gap-4">
+            <a 
+              href="https://www.green-car.co.il/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-[#00ff9d] text-black px-8 py-4 rounded-full font-bold text-center hover:scale-105 hover:shadow-[0_0_20px_rgba(0,255,157,0.4)] transition-all"
+            >
+              למלאי הרכבים הזמין
+            </a>
+            <a 
+              href="tel:*8523" 
+              className="border border-white/20 hover:bg-white/5 text-white px-8 py-4 rounded-full font-bold text-center transition-all"
+            >
+              חייגו עכשיו: *8523
+            </a>
+          </div>
         </div>
       </div>
     </div>
