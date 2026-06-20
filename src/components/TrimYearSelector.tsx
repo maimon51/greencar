@@ -17,12 +17,12 @@ export function TrimYearSelector({ trims }: { trims: any[] }) {
   return (
     <div>
       {/* Year Tabs */}
-      <div className="flex overflow-x-auto gap-2 pb-4 mb-6 scrollbar-hide" style={{ direction: 'rtl' }}>
+      <div className="flex flex-wrap gap-2 pb-4 mb-6" style={{ direction: 'rtl' }}>
         {years.map(year => (
           <button
             key={year}
             onClick={() => setSelectedYear(year)}
-            className={`px-6 py-2 rounded-full whitespace-nowrap font-bold transition-all ${
+            className={`px-6 py-2 rounded-full font-bold transition-all ${
               selectedYear === year 
                 ? 'bg-[#00ff9d] text-black shadow-[0_0_15px_rgba(0,255,157,0.4)]' 
                 : 'bg-white/10 text-white hover:bg-white/20 border border-white/5'
