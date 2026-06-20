@@ -101,7 +101,7 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
               )}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
               {/* Specs block */}
               <div>
                 <p className="text-sm text-gray-500 mb-1">מנוע</p>
@@ -118,6 +118,17 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
               <div>
                 <p className="text-sm text-gray-500 mb-1">תיבת הילוכים</p>
                 <p className="font-medium text-lg">{trim.gearbox || 'לא ידוע'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">מדד ירוק</p>
+                <p className={`font-medium text-lg flex items-center gap-2 ${trim.greenIndex && trim.greenIndex <= 4 ? 'text-green-400' : trim.greenIndex && trim.greenIndex >= 12 ? 'text-red-400' : 'text-yellow-400'}`}>
+                  {trim.greenIndex ? `${trim.greenIndex} / 15` : 'לא ידוע'}
+                  {trim.greenIndex && trim.greenIndex <= 4 && '🌱'}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500 mb-1">פליטת CO2</p>
+                <p className="font-medium text-lg">{trim.co2Wltp ? `${trim.co2Wltp} g/km` : 'לא ידוע'}</p>
               </div>
             </div>
 
