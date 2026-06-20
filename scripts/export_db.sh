@@ -23,7 +23,12 @@ echo "⏳ Starting database export... (This might take a few minutes depending o
 
 # Use Docker to run pg_dump (no local PostgreSQL installation needed)
 # We use the UNPOOLED connection to prevent disconnects during large dumps
-docker run --rm postgres:15 pg_dump "$DATABASE_URL_UNPOOLED" --clean --if-exists --no-owner --no-privileges > "$PROJECT_ROOT/greencar_export.sql"
-
-echo "✅ Export completed successfully!"
-echo "📄 The file has been saved to: $PROJECT_ROOT/greencar_export.sql"
+if docker run --rm postgres:17 pg_dump "$DATABASE_URL_UNPOOLED" --clean --if-exists --no-owner --no-privileges > "$PROJECT_ROOT/greencar_export.sql"; then
+  echo "✅ Export completed successfully!"
+  echo "📄 The file has been saved to: $PROJECT_ROOT/greencar_export.sql"
+else
+  echo "❌ Error: The database export failed. Check the errors above."
+  # Remove the empty/broken sql file so we don't accidentally use it
+  rm -f "$PROJECT_ROOT/greencar_export.sql"
+  exit 1
+fi
