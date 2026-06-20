@@ -15,7 +15,7 @@ export default async function Home() {
       name: true,
       commercialName: true,
       imageUrl: true,
-      _count: { select: { trims: true } },
+      trims: { select: { activeCount: true } },
       manufacturer: { select: { id: true, name: true, country: true } }
     }
   });
@@ -42,8 +42,11 @@ export default async function Home() {
 
   // 1. Prepare Brands for Popular Brands Grid
   const manufacturers = Array.from(groupedBrands.values())
-    .map(brand => ({ id: brand.id, name: brand.name, count: brand.uniqueModels.size }))
-    .sort((a, b) => b.count - a.count)
+    .map(brand => {
+       const activeCount = brand.allModels.reduce((acc, m) => acc + m.trims.reduce((accT: number, t: any) => accT + (t.activeCount || 0), 0), 0);
+       return { id: brand.id, name: brand.name, count: brand.uniqueModels.size, activeCount };
+    })
+    .sort((a, b) => b.activeCount - a.activeCount)
     .slice(0, 12);
 
   // 2. Prepare Data for QuickSearch (Dropdowns)
@@ -69,12 +72,14 @@ export default async function Home() {
       };
     });
 
-  // 3. Prepare Popular Models (Highest trim counts)
+  // 3. Prepare Popular Models (Highest active count)
   const uniqueModelsGlobalMap = new Map<string, any>();
   for (const model of allModels) {
     const displayName = model.commercialName || model.name;
     const { name: cleanBrand } = cleanBrandName(model.manufacturer.name, model.manufacturer.country);
     const globalKey = `${cleanBrand}-${displayName}`;
+    
+    const activeCountSum = model.trims.reduce((acc, trim) => acc + (trim.activeCount || 0), 0);
     
     if (!uniqueModelsGlobalMap.has(globalKey)) {
       uniqueModelsGlobalMap.set(globalKey, {
@@ -83,10 +88,10 @@ export default async function Home() {
         brandName: cleanBrand,
         modelName: displayName,
         imageUrl: model.imageUrl,
-        totalTrims: model._count.trims
+        totalActiveCount: activeCountSum
       });
     } else {
-      uniqueModelsGlobalMap.get(globalKey).totalTrims += model._count.trims;
+      uniqueModelsGlobalMap.get(globalKey).totalActiveCount += activeCountSum;
       // Prefer models that actually have images
       if (!uniqueModelsGlobalMap.get(globalKey).imageUrl && model.imageUrl) {
         uniqueModelsGlobalMap.get(globalKey).imageUrl = model.imageUrl;
@@ -95,8 +100,8 @@ export default async function Home() {
   }
 
   const popularModels = Array.from(uniqueModelsGlobalMap.values())
-    .sort((a, b) => b.totalTrims - a.totalTrims)
-    .slice(0, 8); // Top 8 most varied models
+    .sort((a, b) => b.totalActiveCount - a.totalActiveCount)
+    .slice(0, 8); // Top 8 most popular models
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -157,7 +162,7 @@ export default async function Home() {
             </div>
             <div className="p-4 border-t border-white/10">
               <h3 className="font-bold text-lg group-hover:text-[#00ff9d] transition-colors">{pm.brandName} {pm.modelName}</h3>
-              <p className="text-sm text-gray-400">{pm.totalTrims} רמות גימור</p>
+              <p className="text-sm text-gray-400">{pm.totalActiveCount.toLocaleString()} רכבים בכביש</p>
             </div>
           </Link>
         ))}
@@ -180,7 +185,7 @@ export default async function Home() {
                 <BrandLogo name={brand.name} domain={`${brand.name.toLowerCase().replace(/\s+/g, '')}.com`} />
               </div>
               <h3 className="font-bold group-hover:text-[#00ff9d] transition-colors">{brand.name}</h3>
-              <p className="text-sm text-gray-400 mt-1">{brand.count} דגמים</p>
+              <p className="text-sm text-gray-400 mt-1">{brand.activeCount.toLocaleString()} רכבים בכביש</p>
             </Link>
           ))}
       </div>

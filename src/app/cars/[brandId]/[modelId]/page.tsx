@@ -43,6 +43,9 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
   // Get unique model codes
   const modelCodes = siblingModels.map(m => m.name).join(', ');
   
+  // Get total active cars
+  const totalActiveCount = allTrims.reduce((acc, trim) => acc + (trim.activeCount || 0), 0);
+  
   const { name: cleanName } = cleanBrandName(carModel.manufacturer.name, carModel.manufacturer.country);
 
   return (
@@ -63,6 +66,14 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
         <div className="flex-1 relative z-10">
           <h1 className="text-4xl md:text-6xl font-black mb-2">{cleanName} {searchName}</h1>
           <p className="text-xl text-gray-400 mb-4">קודי דגם: {modelCodes}</p>
+          
+          {totalActiveCount > 0 && (
+            <div className="mb-6">
+              <span className="inline-flex items-center gap-2 bg-blue-500/10 text-blue-400 px-5 py-2.5 rounded-full border border-blue-500/20 font-bold text-sm shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                🏆 פופולרי: {totalActiveCount.toLocaleString()} רכבים פעילים על הכביש בישראל
+              </span>
+            </div>
+          )}
           
           {carModel.description && (
             <p className="text-gray-300 leading-relaxed max-w-2xl mt-4">

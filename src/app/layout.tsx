@@ -31,8 +31,8 @@ export default function RootLayout({
             
             <nav className="hidden md:flex items-center gap-8 font-medium text-gray-300">
               <Link href="/" className="hover:text-[#00ff9d] transition-colors">בית</Link>
-              <Link href="#" className="hover:text-[#00ff9d] transition-colors">רכבים למכירה</Link>
-              <Link href="#" className="hover:text-[#00ff9d] transition-colors">צור קשר</Link>
+              <Link href="/insights" className="hover:text-blue-400 text-blue-500 font-bold transition-colors">📊 נתוני שוק חכמים</Link>
+              <Link href="https://www.green-car.co.il/" target="_blank" className="hover:text-[#00ff9d] transition-colors">רכבים למכירה</Link>
             </nav>
             
             <button className="bg-white/10 hover:bg-white/20 text-white px-6 py-2 rounded-full font-medium transition-all hover:shadow-[0_0_15px_rgba(255,255,255,0.2)]">
