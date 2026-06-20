@@ -50,7 +50,7 @@ export default async function Home() {
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {manufacturers.map((brand) => {
-          const cleanName = cleanBrandName(brand.name, brand.country);
+          const { name: cleanName } = cleanBrandName(brand.name, brand.country);
           return (
             <Link 
               key={brand.id} 

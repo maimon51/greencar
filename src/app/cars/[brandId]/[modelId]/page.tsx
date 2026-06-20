@@ -41,7 +41,7 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
   // Get unique model codes
   const modelCodes = siblingModels.map(m => m.name).join(', ');
   
-  const cleanName = cleanBrandName(carModel.manufacturer.name, carModel.manufacturer.country);
+  const { name: cleanName } = cleanBrandName(carModel.manufacturer.name, carModel.manufacturer.country);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">

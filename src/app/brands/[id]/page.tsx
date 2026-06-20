@@ -33,9 +33,8 @@ export default async function BrandPage({ params }: { params: Promise<{ id: stri
   }, {} as Record<string, any>);
   const uniqueModels = Object.values(modelsGrouped).sort((a, b) => a.displayName.localeCompare(b.displayName));
 
-  // Clean brand name
-  const cleanName = cleanBrandName(brand.name, brand.country);
-  const domain = `${cleanName.split(' ')[0].toLowerCase()}.com`;
+  // Clean brand name and get proper English domain
+  const { name: cleanName, domain } = cleanBrandName(brand.name, brand.country);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">

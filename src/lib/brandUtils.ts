@@ -1,8 +1,90 @@
-export function cleanBrandName(name: string, country: string | null): string {
-  let cleaned = name.replace(/\s*\(.*?\)\s*/g, '').trim();
-  if (country) {
-    const countryRegex = new RegExp(`\\s*${country}\\s*$`, 'i');
-    cleaned = cleaned.replace(countryRegex, '').trim();
+const HEBREW_TO_ENGLISH_BRANDS: Record<string, { name: string, domain: string }> = {
+  'אאודי': { name: 'Audi', domain: 'audi.com' },
+  'אודי': { name: 'Audi', domain: 'audi.com' },
+  'פולקסווגן': { name: 'Volkswagen', domain: 'volkswagen.com' },
+  'פולקסוגן': { name: 'Volkswagen', domain: 'volkswagen.com' },
+  'טויוטה': { name: 'Toyota', domain: 'toyota.com' },
+  'איסוזו': { name: 'Isuzu', domain: 'isuzu.com' },
+  'איווקו': { name: 'Iveco', domain: 'iveco.com' },
+  'אופל': { name: 'Opel', domain: 'opel.com' },
+  'דימלרקריזלר': { name: 'Mercedes-Benz', domain: 'mercedes-benz.com' },
+  'מרצדס': { name: 'Mercedes-Benz', domain: 'mercedes-benz.com' },
+  'ביואיק': { name: 'Buick', domain: 'buick.com' },
+  'אלפא': { name: 'Alfa Romeo', domain: 'alfaromeo.com' },
+  'מזדה': { name: 'Mazda', domain: 'mazda.com' },
+  'מאזדה': { name: 'Mazda', domain: 'mazda.com' },
+  'פורד': { name: 'Ford', domain: 'ford.com' },
+  'סיטרואן': { name: 'Citroen', domain: 'citroen.com' },
+  'פיאט': { name: 'Fiat', domain: 'fiat.com' },
+  'פיג\'ו': { name: 'Peugeot', domain: 'peugeot.com' },
+  'פיגו': { name: 'Peugeot', domain: 'peugeot.com' },
+  'רנו': { name: 'Renault', domain: 'renault.com' },
+  'שברולט': { name: 'Chevrolet', domain: 'chevrolet.com' },
+  'קיה': { name: 'Kia', domain: 'kia.com' },
+  'יונדאי': { name: 'Hyundai', domain: 'hyundai.com' },
+  'סוזוקי': { name: 'Suzuki', domain: 'suzuki.com' },
+  'ניסאן': { name: 'Nissan', domain: 'nissan.com' },
+  'ניסן': { name: 'Nissan', domain: 'nissan.com' },
+  'הונדה': { name: 'Honda', domain: 'honda.com' },
+  'סקודה': { name: 'Skoda', domain: 'skoda.com' },
+  'מיצובישי': { name: 'Mitsubishi', domain: 'mitsubishi-motors.com' },
+  'סובארו': { name: 'Subaru', domain: 'subaru.com' },
+  'סיאט': { name: 'Seat', domain: 'seat.com' },
+  'דאצ\'יה': { name: 'Dacia', domain: 'dacia.com' },
+  'דאציה': { name: 'Dacia', domain: 'dacia.com' },
+  'ב.מ.וו': { name: 'BMW', domain: 'bmw.com' },
+  'במוו': { name: 'BMW', domain: 'bmw.com' },
+  'לנד': { name: 'Land Rover', domain: 'landrover.com' },
+  'וולוו': { name: 'Volvo', domain: 'volvo.com' },
+  'לקסוס': { name: 'Lexus', domain: 'lexus.com' },
+  'פורשה': { name: 'Porsche', domain: 'porsche.com' },
+  'ג\'יפ': { name: 'Jeep', domain: 'jeep.com' },
+  'גיפ': { name: 'Jeep', domain: 'jeep.com' },
+  'סאנגיונג': { name: 'SsangYong', domain: 'smotor.com' },
+  'סמארט': { name: 'Smart', domain: 'smart.com' },
+  'מיני': { name: 'MINI', domain: 'mini.com' },
+  'אינפיניטי': { name: 'Infiniti', domain: 'infiniti.com' },
+  'סאאב': { name: 'Saab', domain: 'saab.com' },
+  'לנצ\'יה': { name: 'Lancia', domain: 'lancia.com' },
+  'דייהטסו': { name: 'Daihatsu', domain: 'daihatsu.com' },
+  'רובר': { name: 'Rover', domain: 'rover.com' },
+  'קרייזלר': { name: 'Chrysler', domain: 'chrysler.com' },
+  'דודג\'': { name: 'Dodge', domain: 'dodge.com' },
+  'דודג': { name: 'Dodge', domain: 'dodge.com' },
+  'קאדילק': { name: 'Cadillac', domain: 'cadillac.com' },
+  'קדילאק': { name: 'Cadillac', domain: 'cadillac.com' },
+  'יגואר': { name: 'Jaguar', domain: 'jaguar.com' },
+  'גי.אמ.סי': { name: 'GMC', domain: 'gmc.com' },
+  'מזראטי': { name: 'Maserati', domain: 'maserati.com' },
+  'פרארי': { name: 'Ferrari', domain: 'ferrari.com' },
+  'אסטון': { name: 'Aston Martin', domain: 'astonmartin.com' },
+  'טסלה': { name: 'Tesla', domain: 'tesla.com' },
+  'צ\'רי': { name: 'Chery', domain: 'cheryinternational.com' },
+  'בי.וויי.די': { name: 'BYD', domain: 'byd.com' },
+  'גילי': { name: 'Geely', domain: 'geely.com' },
+  'אקספנג': { name: 'Xpeng', domain: 'heyxpeng.com' },
+  'סרס': { name: 'Seres', domain: 'seres.com' },
+  'אורה': { name: 'Ora', domain: 'gwm-global.com' },
+  'הונגצ\'י': { name: 'Hongqi', domain: 'hongqi-auto.com' },
+  'מקסוס': { name: 'Maxus', domain: 'maxus.com' },
+  'וואי': { name: 'WEY', domain: 'wey.com' },
+  'דונגפנג': { name: 'Dongfeng', domain: 'dongfeng-global.com' },
+  'ליפמוטור': { name: 'Leapmotor', domain: 'leapmotor.com' },
+  'זיקר': { name: 'Zeekr', domain: 'zeekrglobal.com' },
+  'פולסטאר': { name: 'Polestar', domain: 'polestar.com' }
+};
+
+export function cleanBrandName(name: string, country: string | null): { name: string, domain: string } {
+  // Try to find the first word and match it
+  const firstWord = name.split(/[\s\-\_]+/)[0];
+  
+  if (HEBREW_TO_ENGLISH_BRANDS[firstWord]) {
+    return HEBREW_TO_ENGLISH_BRANDS[firstWord];
   }
-  return cleaned.replace(/\s*-\s*$/, '').trim();
+
+  // Fallback: Just return the first word and a generic domain
+  return {
+    name: firstWord,
+    domain: `${firstWord.toLowerCase()}.com`
+  };
 }
