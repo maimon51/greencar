@@ -42,12 +42,20 @@ export function TrimYearSelector({ trims }: { trims: any[] }) {
                 <h3 className="text-2xl font-bold text-[#00ff9d]">{trim.name}</h3>
                 <p className="text-gray-400">שנת ייצור: {trim.year}</p>
               </div>
-              {trim.safetyScore && (
-                <div className="mt-4 md:mt-0 flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
-                  <span className="text-sm text-gray-400">ציון בטיחות:</span>
-                  <span className="font-bold text-white">{trim.safetyScore} / 8</span>
-                </div>
-              )}
+              <div className="mt-4 md:mt-0 flex flex-wrap items-center gap-2">
+                {trim.msrp && (
+                  <div className="flex items-center gap-2 bg-[#00ff9d]/10 text-[#00ff9d] px-4 py-2 rounded-full border border-[#00ff9d]/20">
+                    <span className="text-sm">מחיר רשמי (MSRP):</span>
+                    <span className="font-bold">₪{trim.msrp.toLocaleString()}</span>
+                  </div>
+                )}
+                {trim.safetyScore && (
+                  <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                    <span className="text-sm text-gray-400">ציון בטיחות:</span>
+                    <span className="font-bold text-white">{trim.safetyScore} / 8</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-6 gap-6">

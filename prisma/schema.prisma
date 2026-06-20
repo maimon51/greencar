@@ -62,6 +62,7 @@ model TrimLevel {
   doors          Int?     // mispar_dlatot
   acceleration   Float?   // 0-100 km/h in seconds
   topSpeed       Int?     // km/h
+  msrp           Int?     // mehir (from Official Prices API)
   
   // Safety Features (boolean flags based on API indicators)
   abs            Boolean  @default(false)
