@@ -22,12 +22,11 @@ export default function RootLayout({
         <header className="sticky top-0 z-50 glass-panel border-b border-white/10">
           <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#00ff9d] to-[#00b8ff] flex items-center justify-center shadow-[0_0_20px_var(--color-primary-glow)] group-hover:scale-105 transition-transform">
-                <span className="text-black font-bold text-xl">G</span>
-              </div>
-              <span className="text-2xl font-black tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                Greencar
-              </span>
+              <img 
+                src="https://www.green-car.co.il/sites/default/files/ua.png" 
+                alt="גרינקאר" 
+                className="h-10 bg-white/10 p-1.5 rounded-lg group-hover:scale-105 transition-transform" 
+              />
             </Link>
             
             <nav className="hidden md:flex items-center gap-8 font-medium text-gray-300">
