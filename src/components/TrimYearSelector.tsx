@@ -49,6 +49,12 @@ export function TrimYearSelector({ trims }: { trims: any[] }) {
                     <span className="font-bold">₪{trim.msrp.toLocaleString()}</span>
                   </div>
                 )}
+                {trim.activeCount > 0 && (
+                  <div className="flex items-center gap-2 bg-blue-500/10 text-blue-400 px-4 py-2 rounded-full border border-blue-500/20">
+                    <span className="text-sm">רכבים פעילים בכביש:</span>
+                    <span className="font-bold">{trim.activeCount.toLocaleString()}</span>
+                  </div>
+                )}
                 {trim.safetyScore && (
                   <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
                     <span className="text-sm text-gray-400">ציון בטיחות:</span>

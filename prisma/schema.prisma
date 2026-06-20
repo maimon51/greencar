@@ -63,6 +63,7 @@ model TrimLevel {
   acceleration   Float?   // 0-100 km/h in seconds
   topSpeed       Int?     // km/h
   msrp           Int?     // mehir (from Official Prices API)
+  activeCount    Int      @default(0) // Number of cars currently on the road
   
   // Safety Features (boolean flags based on API indicators)
   abs            Boolean  @default(false)
