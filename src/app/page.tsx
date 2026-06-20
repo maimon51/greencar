@@ -3,20 +3,24 @@ import Link from "next/link";
 import { searchLicensePlate } from "./actions";
 import { cleanBrandName } from "@/lib/brandUtils";
 import { BrandLogo } from "@/components/BrandLogo";
+import { QuickSearch } from "@/components/QuickSearch";
 
 export const revalidate = 3600; 
 
 export default async function Home() {
-  // Fetch all models with their manufacturer to group properly
+  // Fetch all models to compute popular brands, popular models, and populate QuickSearch
   const allModels = await prisma.carModel.findMany({
     select: {
+      id: true,
       name: true,
       commercialName: true,
+      imageUrl: true,
+      _count: { select: { trims: true } },
       manufacturer: { select: { id: true, name: true, country: true } }
     }
   });
 
-  const groupedBrands = new Map<string, { id: number, name: string, uniqueModels: Set<string> }>();
+  const groupedBrands = new Map<string, { id: number, name: string, uniqueModels: Set<string>, allModels: any[] }>();
   
   for (const model of allModels) {
     const { name: cleanName } = cleanBrandName(model.manufacturer.name, model.manufacturer.country);
@@ -26,33 +30,98 @@ export default async function Home() {
       groupedBrands.set(cleanName, { 
         id: model.manufacturer.id, 
         name: cleanName, 
-        uniqueModels: new Set([displayName]) 
+        uniqueModels: new Set([displayName]),
+        allModels: [model]
       });
     } else {
-      groupedBrands.get(cleanName)!.uniqueModels.add(displayName);
+      const brandObj = groupedBrands.get(cleanName)!;
+      brandObj.uniqueModels.add(displayName);
+      brandObj.allModels.push(model);
     }
   }
 
+  // 1. Prepare Brands for Popular Brands Grid
   const manufacturers = Array.from(groupedBrands.values())
     .map(brand => ({ id: brand.id, name: brand.name, count: brand.uniqueModels.size }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 12);
 
+  // 2. Prepare Data for QuickSearch (Dropdowns)
+  const quickSearchData = Array.from(groupedBrands.values())
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map(brand => {
+      // Deduplicate models by commercialName so we don't have 10 "Forester" entries
+      const uniqueModelMap = new Map<string, number>();
+      brand.allModels.forEach(m => {
+        const displayName = m.commercialName || m.name;
+        if (!uniqueModelMap.has(displayName)) {
+          uniqueModelMap.set(displayName, m.id);
+        }
+      });
+      const deduplicatedModels = Array.from(uniqueModelMap.entries())
+        .map(([name, id]) => ({ id, name }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      return {
+        id: brand.id,
+        name: brand.name,
+        models: deduplicatedModels
+      };
+    });
+
+  // 3. Prepare Popular Models (Highest trim counts)
+  const uniqueModelsGlobalMap = new Map<string, any>();
+  for (const model of allModels) {
+    const displayName = model.commercialName || model.name;
+    const { name: cleanBrand } = cleanBrandName(model.manufacturer.name, model.manufacturer.country);
+    const globalKey = `${cleanBrand}-${displayName}`;
+    
+    if (!uniqueModelsGlobalMap.has(globalKey)) {
+      uniqueModelsGlobalMap.set(globalKey, {
+        id: model.id,
+        brandId: model.manufacturer.id,
+        brandName: cleanBrand,
+        modelName: displayName,
+        imageUrl: model.imageUrl,
+        totalTrims: model._count.trims
+      });
+    } else {
+      uniqueModelsGlobalMap.get(globalKey).totalTrims += model._count.trims;
+      // Prefer models that actually have images
+      if (!uniqueModelsGlobalMap.get(globalKey).imageUrl && model.imageUrl) {
+        uniqueModelsGlobalMap.get(globalKey).imageUrl = model.imageUrl;
+      }
+    }
+  }
+
+  const popularModels = Array.from(uniqueModelsGlobalMap.values())
+    .sort((a, b) => b.totalTrims - a.totalTrims)
+    .slice(0, 8); // Top 8 most varied models
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
       {/* Hero Section */}
-      <div className="relative rounded-3xl overflow-hidden glass-panel p-12 md:p-24 text-center mb-16 border border-white/10">
+      <div className="relative rounded-3xl overflow-hidden glass-panel p-8 md:p-16 text-center mb-16 border border-white/10">
         <div className="absolute inset-0 bg-gradient-to-b from-[#00ff9d]/10 to-transparent pointer-events-none" />
         
-        <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight drop-shadow-xl text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500">
+        <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight drop-shadow-xl text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-500 relative z-10">
           מאגר הרכבים <br className="hidden md:block"/> הגדול בישראל
         </h1>
-        <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10">
+        <p className="text-xl text-gray-400 max-w-2xl mx-auto mb-10 relative z-10">
           מפרט טכני מלא, רמות גימור, ודירוגי בטיחות לכל רכב שעלה על הכביש בישראל.
         </p>
+
+        {/* Quick Search Dropdowns */}
+        <QuickSearch brands={quickSearchData} />
         
-        {/* Search Mockup */}
-        <form action={searchLicensePlate} className="max-w-2xl mx-auto flex gap-4">
+        <div className="my-8 flex items-center justify-center gap-4 text-gray-500 relative z-10">
+          <div className="h-px w-16 bg-white/10"></div>
+          <span>או חפש לפי לוחית רישוי</span>
+          <div className="h-px w-16 bg-white/10"></div>
+        </div>
+        
+        {/* Search Mockup (Plate) */}
+        <form action={searchLicensePlate} className="max-w-2xl mx-auto flex gap-4 relative z-10">
           <input 
             type="text"
             name="plate" 
@@ -67,9 +136,36 @@ export default async function Home() {
         </form>
       </div>
 
-      {/* Brands Grid */}
+      {/* Popular Models Grid */}
       <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
         <span className="w-2 h-8 rounded-full bg-[#00ff9d]"></span>
+        דגמים נבחרים
+      </h2>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+        {popularModels.map((pm) => (
+          <Link 
+            key={pm.id} 
+            href={`/cars/${pm.brandId}/${pm.id}`}
+            className="glass-panel rounded-2xl overflow-hidden hover:scale-105 transition-transform group border border-white/10"
+          >
+            <div className="h-40 bg-white/5 relative flex items-center justify-center p-4">
+              {pm.imageUrl ? (
+                <img src={pm.imageUrl} alt={pm.modelName} className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-500" />
+              ) : (
+                <span className="text-gray-600 text-sm">אין תמונה</span>
+              )}
+            </div>
+            <div className="p-4 border-t border-white/10">
+              <h3 className="font-bold text-lg group-hover:text-[#00ff9d] transition-colors">{pm.brandName} {pm.modelName}</h3>
+              <p className="text-sm text-gray-400">{pm.totalTrims} רמות גימור</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* Brands Grid */}
+      <h2 className="text-3xl font-bold mb-8 flex items-center gap-3">
+        <span className="w-2 h-8 rounded-full bg-white"></span>
         יצרנים פופולריים
       </h2>
       
