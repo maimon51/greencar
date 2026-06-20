@@ -1,24 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-export function BrandLogo({ domain, name }: { domain: string, name: string }) {
-  const [error, setError] = useState(false);
+export function BrandLogo({ domain, name }: { domain: string; name: string }) {
+  // 0: try local, 1: try clearbit, 2: fallback text
+  const [errorLevel, setErrorLevel] = useState(0);
 
-  if (error) {
+  // If name changes, reset error level
+  useEffect(() => {
+    setErrorLevel(0);
+  }, [name, domain]);
+
+  if (errorLevel >= 2) {
     return (
-      <span className="text-black font-black text-4xl bg-gradient-to-tr from-[#00ff9d] to-[#00b8ff] w-full h-full flex items-center justify-center">
+      <span className="text-4xl font-black text-gray-300 group-hover:text-[#00ff9d] transition-colors">
         {name.charAt(0)}
       </span>
     );
   }
 
+  const cleanFilename = name.toLowerCase().replace(/\s+/g, '_');
+  const imgSrc = errorLevel === 0 
+    ? `/logos/${cleanFilename}.png` 
+    : `https://logo.clearbit.com/${domain}`;
+
   return (
-    <img 
-      src={`https://logo.clearbit.com/${domain}`} 
-      alt={name}
-      className="w-16 h-16 object-contain z-10"
-      onError={() => setError(true)}
+    <img
+      src={imgSrc}
+      alt={`${name} logo`}
+      className="w-16 h-16 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+      onError={() => setErrorLevel(prev => prev + 1)}
     />
   );
 }
