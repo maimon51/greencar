@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cleanBrandName } from "@/lib/brandUtils";
 
 export default async function CarModelPage({ params }: { params: Promise<{ brandId: string, modelId: string }> }) {
   const resolvedParams = await params;
@@ -40,7 +41,7 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
   // Get unique model codes
   const modelCodes = siblingModels.map(m => m.name).join(', ');
   
-  const cleanBrandName = carModel.manufacturer.name.replace(/\s*\(.*?\)\s*/g, '').trim();
+  const cleanName = cleanBrandName(carModel.manufacturer.name, carModel.manufacturer.country);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -48,7 +49,7 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
       <nav className="flex gap-2 text-sm text-gray-400 mb-8">
         <Link href="/" className="hover:text-white">ראשי</Link>
         <span>/</span>
-        <Link href={`/brands/${brandId}`} className="hover:text-white">{cleanBrandName}</Link>
+        <Link href={`/brands/${brandId}`} className="hover:text-white">{cleanName}</Link>
         <span>/</span>
         <span className="text-[#00ff9d]">{searchName}</span>
       </nav>
@@ -58,7 +59,7 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
         <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-[#00ff9d]/10 to-transparent blur-3xl rounded-full pointer-events-none" />
         
         <div className="flex-1 relative z-10">
-          <h1 className="text-4xl md:text-6xl font-black mb-2">{cleanBrandName} {searchName}</h1>
+          <h1 className="text-4xl md:text-6xl font-black mb-2">{cleanName} {searchName}</h1>
           <p className="text-xl text-gray-400 mb-4">קודי דגם: {modelCodes}</p>
           
           {carModel.description && (
@@ -157,7 +158,7 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
 
       {/* Marketing CTA for Greencar */}
       <div className="mt-16 p-8 rounded-2xl border border-[#00ff9d]/30 bg-[#00ff9d]/5 text-center">
-        <h3 className="text-2xl font-bold mb-4">מעוניינים ב{cleanBrandName} {searchName}?</h3>
+        <h3 className="text-2xl font-bold mb-4">מעוניינים ב{cleanName} {searchName}?</h3>
         <p className="text-gray-300 mb-6">לסוכנות Greencar יש מבחר רכבים במצב תצוגה. השאירו פרטים ונחזור אליכם.</p>
         <button className="bg-[#00ff9d] text-black font-bold px-8 py-3 rounded-full hover:shadow-[0_0_20px_var(--color-primary-glow)] transition-all hover:scale-105">
           בדוק זמינות במלאי

@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BrandLogo } from "@/components/BrandLogo";
+import { cleanBrandName } from "@/lib/brandUtils";
 
 export default async function BrandPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -31,34 +33,26 @@ export default async function BrandPage({ params }: { params: Promise<{ id: stri
   }, {} as Record<string, any>);
   const uniqueModels = Object.values(modelsGrouped).sort((a, b) => a.displayName.localeCompare(b.displayName));
 
-  // Clean brand name (remove parentheses like "TOYOTA (JAPAN)")
-  const cleanBrandName = brand.name.replace(/\s*\(.*?\)\s*/g, '').trim();
-  const domain = `${cleanBrandName.split(' ')[0].toLowerCase()}.com`;
+  // Clean brand name
+  const cleanName = cleanBrandName(brand.name, brand.country);
+  const domain = `${cleanName.split(' ')[0].toLowerCase()}.com`;
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
       {/* Brand Header */}
       <div className="mb-12 flex items-center gap-6">
         <div className="w-24 h-24 rounded-2xl bg-white/5 flex items-center justify-center shadow-[0_0_20px_var(--color-primary-glow)] border border-white/10 overflow-hidden relative">
-          <img 
-            src={`https://logo.clearbit.com/${domain}`} 
-            alt={cleanBrandName}
-            className="w-16 h-16 object-contain z-10"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement!.innerHTML = `<span class="text-black font-black text-4xl bg-gradient-to-tr from-[#00ff9d] to-[#00b8ff] w-full h-full flex items-center justify-center">${cleanBrandName.charAt(0)}</span>`;
-            }}
-          />
+          <BrandLogo domain={domain} name={cleanName} />
         </div>
         <div>
-          <h1 className="text-4xl md:text-5xl font-black">{cleanBrandName}</h1>
+          <h1 className="text-4xl md:text-5xl font-black">{cleanName}</h1>
           <p className="text-gray-400 text-lg mt-2">{brand.country ? `ארץ ייצור: ${brand.country}` : 'דגמי יצרן'}</p>
         </div>
       </div>
 
       <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
         <span className="w-2 h-6 rounded-full bg-[#00ff9d]"></span>
-        דגמי {cleanBrandName}
+        דגמי {cleanName}
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

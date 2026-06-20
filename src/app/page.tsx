@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { searchLicensePlate } from "./actions";
+import { cleanBrandName } from "@/lib/brandUtils";
 
 export const revalidate = 3600; 
 
@@ -48,19 +49,22 @@ export default async function Home() {
       </h2>
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {manufacturers.map((brand) => (
-          <Link 
-            key={brand.id} 
-            href={`/brands/${brand.id}`}
-            className="glass-panel p-6 rounded-2xl hover:-translate-y-2 hover:border-[#00ff9d]/50 transition-all group flex flex-col items-center text-center cursor-pointer"
-          >
-            <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:bg-[#00ff9d]/10 transition-colors">
-              <span className="text-2xl font-bold text-gray-300 group-hover:text-[#00ff9d]">{brand.name.charAt(0)}</span>
-            </div>
-            <h3 className="font-bold text-xl mb-1">{brand.name}</h3>
-            <span className="text-sm text-gray-500">{brand._count.models} דגמים</span>
-          </Link>
-        ))}
+        {manufacturers.map((brand) => {
+          const cleanName = cleanBrandName(brand.name, brand.country);
+          return (
+            <Link 
+              key={brand.id} 
+              href={`/brands/${brand.id}`}
+              className="glass-panel p-6 rounded-2xl hover:scale-105 transition-transform flex flex-col items-center justify-center text-center group"
+            >
+              <div className="w-16 h-16 mb-4 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-[#00ff9d]/50 transition-colors">
+                <span className="text-2xl font-black">{cleanName.charAt(0)}</span>
+              </div>
+              <h3 className="font-bold group-hover:text-[#00ff9d] transition-colors">{cleanName}</h3>
+              <p className="text-sm text-gray-400 mt-1">{brand._count.models} דגמים</p>
+            </Link>
+          );
+        })}
       </div>
       
       {/* Marketing CTA */}
