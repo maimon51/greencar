@@ -3,6 +3,8 @@ import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import https from 'https';
 import dotenv from 'dotenv';
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // Bypass local cert issue
+
 // We need to redefine the map here since we can't easily import ts modules in a node script without ts-node compiling it
 const HEBREW_TO_ENGLISH_BRANDS: Record<string, string> = {
   'אאודי': 'Audi', 'אודי': 'Audi', 'פולקסווגן': 'Volkswagen', 'פולקסוגן': 'Volkswagen',
@@ -31,21 +33,17 @@ const prisma = new PrismaClient({ adapter });
 
 async function searchWikipedia(query: string) {
   const url = `https://en.wikipedia.org/w/api.php?action=query&format=json&prop=pageimages|extracts&generator=search&gsrsearch=${encodeURIComponent(query)}&gsrlimit=1&pithumbsize=800&exintro=1&explaintext=1`;
-  return new Promise<any>((resolve, reject) => {
-    https.get(url, { headers: { 'User-Agent': 'Greencar/1.0' } }, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve(JSON.parse(data)));
-    }).on('error', reject);
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'Greencar/1.0 (contact@example.com)' }
   });
+  return await res.json();
 }
 
 async function run() {
   console.log('🚀 Starting Image Enrichment with English mappings...');
   const models = await prisma.carModel.findMany({
     where: { imageUrl: null },
-    include: { manufacturer: true },
-    take: 30
+    include: { manufacturer: true }
   });
 
   for (const model of models) {

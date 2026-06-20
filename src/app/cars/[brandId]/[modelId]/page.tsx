@@ -36,7 +36,8 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
 
   // Combine trims and recalls
   const allTrims = siblingModels.flatMap(m => m.trims).sort((a, b) => b.year - a.year);
-  const allRecalls = siblingModels.flatMap(m => m.recalls);
+  const rawRecalls = siblingModels.flatMap(m => m.recalls);
+  const allRecalls = Array.from(new Map(rawRecalls.map(r => [r.description, r])).values());
   
   // Get unique model codes
   const modelCodes = siblingModels.map(m => m.name).join(', ');
