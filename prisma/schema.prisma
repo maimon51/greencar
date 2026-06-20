@@ -28,6 +28,9 @@ model CarModel {
   // Enriched content
   imageUrl       String?
   description    String?
+  trunkCapacity  Int?
+  review         String?
+  extraSpecs     Json?
   
   trims          TrimLevel[]
   activeVehicles ActiveVehicle[]
@@ -54,6 +57,8 @@ model TrimLevel {
   weight         Int?     // mishkal_kolel
   seats          Int?     // mispar_moshavim
   doors          Int?     // mispar_dlatot
+  acceleration   Float?   // 0-100 km/h in seconds
+  topSpeed       Int?     // km/h
   
   // Safety Features (boolean flags based on API indicators)
   abs            Boolean  @default(false)
@@ -69,6 +74,8 @@ model TrimLevel {
   // Eco
   greenIndex     Int?     // madad_yarok
   co2Wltp        Float?   // CO2_WLTP
+
+  extraSpecs     Json?
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
