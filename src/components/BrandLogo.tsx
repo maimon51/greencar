@@ -25,11 +25,13 @@ export function BrandLogo({ domain, name }: { domain: string; name: string }) {
     : `https://logo.clearbit.com/${domain}`;
 
   return (
-    <img
-      src={imgSrc}
-      alt={`${name} logo`}
-      className="w-16 h-16 object-contain drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]"
-      onError={() => setErrorLevel(prev => prev + 1)}
-    />
+    <div className="w-16 h-16 bg-white rounded-xl flex items-center justify-center p-2 shadow-[0_0_15px_rgba(255,255,255,0.15)] group-hover:shadow-[0_0_20px_var(--color-primary-glow)] transition-all">
+      <img
+        src={imgSrc}
+        alt={`${name} logo`}
+        className="w-full h-full object-contain"
+        onError={() => setErrorLevel(prev => prev + 1)}
+      />
+    </div>
   );
 }

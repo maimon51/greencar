@@ -2,16 +2,31 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { searchLicensePlate } from "./actions";
 import { cleanBrandName } from "@/lib/brandUtils";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export const revalidate = 3600; 
 
 export default async function Home() {
-  const manufacturers = await prisma.manufacturer.findMany({
+  const rawManufacturers = await prisma.manufacturer.findMany({
     where: { models: { some: {} } },
-    include: { _count: { select: { models: true } } },
-    orderBy: { models: { _count: 'desc' } },
-    take: 12,
+    include: { _count: { select: { models: true } } }
   });
+
+  // Group by clean name so we don't show multiple "Volkswagen" (e.g. from Germany, Spain)
+  const groupedBrands = new Map<string, { id: number, name: string, count: number }>();
+  for (const m of rawManufacturers) {
+    const { name: cleanName } = cleanBrandName(m.name, m.country);
+    if (!groupedBrands.has(cleanName)) {
+      groupedBrands.set(cleanName, { id: m.id, name: cleanName, count: m._count.models });
+    } else {
+      const existing = groupedBrands.get(cleanName)!;
+      existing.count += m._count.models;
+    }
+  }
+
+  const manufacturers = Array.from(groupedBrands.values())
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 12);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -49,22 +64,19 @@ export default async function Home() {
       </h2>
       
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {manufacturers.map((brand) => {
-          const { name: cleanName } = cleanBrandName(brand.name, brand.country);
-          return (
+        {manufacturers.map((brand) => (
             <Link 
               key={brand.id} 
               href={`/brands/${brand.id}`}
               className="glass-panel p-6 rounded-2xl hover:scale-105 transition-transform flex flex-col items-center justify-center text-center group"
             >
-              <div className="w-16 h-16 mb-4 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-[#00ff9d]/50 transition-colors">
-                <span className="text-2xl font-black">{cleanName.charAt(0)}</span>
+              <div className="mb-4">
+                <BrandLogo name={brand.name} domain={`${brand.name.toLowerCase().replace(/\s+/g, '')}.com`} />
               </div>
-              <h3 className="font-bold group-hover:text-[#00ff9d] transition-colors">{cleanName}</h3>
-              <p className="text-sm text-gray-400 mt-1">{brand._count.models} דגמים</p>
+              <h3 className="font-bold group-hover:text-[#00ff9d] transition-colors">{brand.name}</h3>
+              <p className="text-sm text-gray-400 mt-1">{brand.count} דגמים</p>
             </Link>
-          );
-        })}
+          ))}
       </div>
       
       {/* Marketing CTA */}

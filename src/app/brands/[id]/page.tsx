@@ -10,8 +10,19 @@ export default async function BrandPage({ params }: { params: Promise<{ id: stri
   
   if (isNaN(brandId)) return notFound();
 
-  const brand = await prisma.manufacturer.findUnique({
-    where: { id: brandId },
+  const initialBrand = await prisma.manufacturer.findUnique({
+    where: { id: brandId }
+  });
+
+  if (!initialBrand) return notFound();
+
+  // Get the clean name
+  const { name: cleanName, domain } = cleanBrandName(initialBrand.name, initialBrand.country);
+
+  // Now find ALL manufacturers that resolve to this cleanName
+  // We have to pull them all and filter in memory, or query them if we know the exact names.
+  // The safest is to pull all manufacturers that have models, and filter by cleanName
+  const allMfrs = await prisma.manufacturer.findMany({
     include: {
       models: {
         include: { _count: { select: { trims: true } } }
@@ -19,10 +30,13 @@ export default async function BrandPage({ params }: { params: Promise<{ id: stri
     }
   });
 
-  if (!brand) return notFound();
+  const matchingMfrs = allMfrs.filter(m => cleanBrandName(m.name, m.country).name === cleanName);
+  
+  // Combine all their models
+  const allModels = matchingMfrs.flatMap(m => m.models);
 
   // Group models by their displayed name
-  const modelsGrouped = brand.models.reduce((acc, model) => {
+  const modelsGrouped = allModels.reduce((acc, model) => {
     const displayName = model.commercialName || model.name;
     if (!acc[displayName]) {
       acc[displayName] = { ...model, displayName, totalTrims: 0, modelCodes: [] };
@@ -31,10 +45,8 @@ export default async function BrandPage({ params }: { params: Promise<{ id: stri
     acc[displayName].modelCodes.push(model.name);
     return acc;
   }, {} as Record<string, any>);
+  
   const uniqueModels = Object.values(modelsGrouped).sort((a, b) => a.displayName.localeCompare(b.displayName));
-
-  // Clean brand name and get proper English domain
-  const { name: cleanName, domain } = cleanBrandName(brand.name, brand.country);
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -45,7 +57,6 @@ export default async function BrandPage({ params }: { params: Promise<{ id: stri
         </div>
         <div>
           <h1 className="text-4xl md:text-5xl font-black">{cleanName}</h1>
-          <p className="text-gray-400 text-lg mt-2">{brand.country ? `ארץ ייצור: ${brand.country}` : 'דגמי יצרן'}</p>
         </div>
       </div>
 
@@ -58,7 +69,7 @@ export default async function BrandPage({ params }: { params: Promise<{ id: stri
         {uniqueModels.map((model) => (
           <Link
             key={model.id}
-            href={`/cars/${brand.id}/${model.id}`}
+            href={`/cars/${model.manufacturerId}/${model.id}`}
             className="glass-panel p-6 rounded-2xl hover:border-[#00ff9d]/50 hover:bg-white/10 transition-all group"
           >
             <h3 className="text-2xl font-bold group-hover:text-[#00ff9d] transition-colors">{model.displayName}</h3>
@@ -77,7 +88,7 @@ export default async function BrandPage({ params }: { params: Promise<{ id: stri
         ))}
       </div>
       
-      {brand.models.length === 0 && (
+      {allModels.length === 0 && (
         <div className="text-center py-20 text-gray-500">
           לא נמצאו דגמים ליצרן זה במסד הנתונים.
         </div>
