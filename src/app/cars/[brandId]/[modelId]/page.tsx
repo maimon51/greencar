@@ -11,16 +11,36 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
 
   const carModel = await prisma.carModel.findUnique({
     where: { id: modelId },
-    include: {
-      manufacturer: true,
-      recalls: true,
-      trims: {
-        orderBy: { year: 'desc' }
-      }
-    }
+    include: { manufacturer: true }
   });
 
   if (!carModel) return notFound();
+
+  const searchName = carModel.commercialName || carModel.name;
+  
+  // Find all models for this manufacturer that have this same displayed name
+  const siblingModels = await prisma.carModel.findMany({
+    where: {
+      manufacturerId: brandId,
+      OR: [
+        { commercialName: searchName },
+        { name: searchName }
+      ]
+    },
+    include: {
+      recalls: true,
+      trims: { orderBy: { year: 'desc' } }
+    }
+  });
+
+  // Combine trims and recalls
+  const allTrims = siblingModels.flatMap(m => m.trims).sort((a, b) => b.year - a.year);
+  const allRecalls = siblingModels.flatMap(m => m.recalls);
+  
+  // Get unique model codes
+  const modelCodes = siblingModels.map(m => m.name).join(', ');
+  
+  const cleanBrandName = carModel.manufacturer.name.replace(/\s*\(.*?\)\s*/g, '').trim();
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-12">
@@ -28,9 +48,9 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
       <nav className="flex gap-2 text-sm text-gray-400 mb-8">
         <Link href="/" className="hover:text-white">ראשי</Link>
         <span>/</span>
-        <Link href={`/brands/${brandId}`} className="hover:text-white">{carModel.manufacturer.name}</Link>
+        <Link href={`/brands/${brandId}`} className="hover:text-white">{cleanBrandName}</Link>
         <span>/</span>
-        <span className="text-[#00ff9d]">{carModel.commercialName || carModel.name}</span>
+        <span className="text-[#00ff9d]">{searchName}</span>
       </nav>
 
       {/* Header */}
@@ -38,10 +58,8 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
         <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-[#00ff9d]/10 to-transparent blur-3xl rounded-full pointer-events-none" />
         
         <div className="flex-1 relative z-10">
-          <h1 className="text-4xl md:text-6xl font-black mb-2">{carModel.manufacturer.name} {carModel.commercialName || carModel.name}</h1>
-          {carModel.commercialName && carModel.commercialName !== carModel.name && (
-            <p className="text-xl text-gray-400 mb-4">קוד דגם: {carModel.name}</p>
-          )}
+          <h1 className="text-4xl md:text-6xl font-black mb-2">{cleanBrandName} {searchName}</h1>
+          <p className="text-xl text-gray-400 mb-4">קודי דגם: {modelCodes}</p>
           
           {carModel.description && (
             <p className="text-gray-300 leading-relaxed max-w-2xl mt-4">
@@ -66,7 +84,7 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
       </h2>
 
       <div className="space-y-6">
-        {carModel.trims.map((trim) => (
+        {allTrims.map((trim) => (
           <div key={trim.id} className="glass-panel rounded-2xl p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 pb-6 border-b border-white/10">
               <div>
@@ -114,20 +132,20 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
             </div>
           </div>
         ))}
-        {carModel.trims.length === 0 && (
+        {allTrims.length === 0 && (
           <div className="text-gray-500 text-center py-10">לא נמצאו רמות גימור לדגם זה.</div>
         )}
       </div>
 
       {/* Recalls Section */}
-      {carModel.recalls && carModel.recalls.length > 0 && (
+      {allRecalls && allRecalls.length > 0 && (
         <div className="mt-12">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-red-400">
             <span className="w-2 h-6 rounded-full bg-red-500"></span>
             קריאות שירות (Recalls) בטיחותיות
           </h2>
           <div className="space-y-4">
-            {carModel.recalls.map(recall => (
+            {allRecalls.map(recall => (
               <div key={recall.id} className="glass-panel p-6 border-r-4 border-red-500 rounded-lg">
                 <p className="font-medium text-lg">{recall.description}</p>
                 {recall.date && <p className="text-sm text-gray-400 mt-2">פורסם ב: {new Date(recall.date).toLocaleDateString('he-IL')}</p>}
@@ -139,7 +157,7 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
 
       {/* Marketing CTA for Greencar */}
       <div className="mt-16 p-8 rounded-2xl border border-[#00ff9d]/30 bg-[#00ff9d]/5 text-center">
-        <h3 className="text-2xl font-bold mb-4">מעוניינים ב{carModel.manufacturer.name} {carModel.name}?</h3>
+        <h3 className="text-2xl font-bold mb-4">מעוניינים ב{cleanBrandName} {searchName}?</h3>
         <p className="text-gray-300 mb-6">לסוכנות Greencar יש מבחר רכבים במצב תצוגה. השאירו פרטים ונחזור אליכם.</p>
         <button className="bg-[#00ff9d] text-black font-bold px-8 py-3 rounded-full hover:shadow-[0_0_20px_var(--color-primary-glow)] transition-all hover:scale-105">
           בדוק זמינות במלאי
