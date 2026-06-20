@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cleanBrandName } from "@/lib/brandUtils";
+import { TrimYearSelector } from "@/components/TrimYearSelector";
 
 export default async function CarModelPage({ params }: { params: Promise<{ brandId: string, modelId: string }> }) {
   const resolvedParams = await params;
@@ -127,75 +128,14 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
         </div>
       )}
 
-      {/* Trims / Versions */}
-      <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
-        <span className="w-2 h-6 rounded-full bg-[#00ff9d]"></span>
-        מפרטים ורמות גימור
-      </h2>
-
-      <div className="space-y-6">
-        {allTrims.map((trim) => (
-          <div key={trim.id} className="glass-panel rounded-2xl p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 pb-6 border-b border-white/10">
-              <div>
-                <h3 className="text-2xl font-bold text-[#00ff9d]">{trim.name}</h3>
-                <p className="text-gray-400">שנת ייצור: {trim.year}</p>
-              </div>
-              {trim.safetyScore && (
-                <div className="mt-4 md:mt-0 flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full">
-                  <span className="text-sm text-gray-400">ציון בטיחות:</span>
-                  <span className="font-bold">{trim.safetyScore} / 8</span>
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-6">
-              {/* Specs block */}
-              <div>
-                <p className="text-sm text-gray-500 mb-1">מנוע</p>
-                <p className="font-medium text-lg">{trim.engineSize ? `${trim.engineSize} סמ"ק` : 'לא ידוע'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">כוח סוס</p>
-                <p className="font-medium text-lg">{trim.horsepower ? `${trim.horsepower} כ"ס` : 'לא ידוע'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">דלק</p>
-                <p className="font-medium text-lg">{trim.fuelType || 'לא ידוע'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">תיבת הילוכים</p>
-                <p className="font-medium text-lg">{trim.gearbox || 'לא ידוע'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">מדד ירוק</p>
-                <p className={`font-medium text-lg flex items-center gap-2 ${trim.greenIndex && trim.greenIndex <= 4 ? 'text-green-400' : trim.greenIndex && trim.greenIndex >= 12 ? 'text-red-400' : 'text-yellow-400'}`}>
-                  {trim.greenIndex ? `${trim.greenIndex} / 15` : 'לא ידוע'}
-                  {trim.greenIndex && trim.greenIndex <= 4 && '🌱'}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 mb-1">פליטת CO2</p>
-                <p className="font-medium text-lg">{trim.co2Wltp ? `${trim.co2Wltp} g/km` : 'לא ידוע'}</p>
-              </div>
-            </div>
-
-            {/* Safety Badges */}
-            <div className="mt-8">
-              <p className="text-sm text-gray-500 mb-3">מערכות בטיחות מתקדמות</p>
-              <div className="flex flex-wrap gap-2">
-                <Badge active={trim.adaptiveCruise} label="בקרת שיוט אדפטיבית" />
-                <Badge active={trim.laneDeparture} label="סטייה מנתיב" />
-                <Badge active={trim.blindSpot} label="שטח מת" />
-                <Badge active={trim.autoBrake} label="בלימת חירום" />
-                <Badge active={trim.pedestrianId} label="זיהוי הולכי רגל" />
-              </div>
-            </div>
-          </div>
-        ))}
-        {allTrims.length === 0 && (
-          <div className="text-gray-500 text-center py-10">לא נמצאו רמות גימור לדגם זה.</div>
-        )}
+      {/* Trims / Versions via Client Component */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
+          <span className="w-2 h-6 rounded-full bg-[#00ff9d]"></span>
+          מפרטים ורמות גימור
+        </h2>
+        
+        <TrimYearSelector trims={allTrims} />
       </div>
 
       {/* Recalls Section */}
@@ -225,14 +165,5 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
         </button>
       </div>
     </div>
-  );
-}
-
-function Badge({ active, label }: { active: boolean, label: string }) {
-  if (!active) return null;
-  return (
-    <span className="bg-[#00ff9d]/10 text-[#00ff9d] border border-[#00ff9d]/20 px-3 py-1 rounded-full text-xs font-medium">
-      ✓ {label}
-    </span>
   );
 }

@@ -35,9 +35,9 @@ async function run() {
   
   const resourceId = '142afde2-6228-49f9-8a29-9b6c3a0cbe40';
   const limit = 1000;
-  let offset = 0;
+  let offset = 7000; // resuming where we left off
   let hasMore = true;
-  let totalProcessed = 0;
+  let totalProcessed = 7000;
 
   while (hasMore) {
     const url = `https://data.gov.il/api/3/action/datastore_search?resource_id=${resourceId}&limit=${limit}&offset=${offset}`;

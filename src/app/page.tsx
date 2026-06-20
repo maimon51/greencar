@@ -7,24 +7,34 @@ import { BrandLogo } from "@/components/BrandLogo";
 export const revalidate = 3600; 
 
 export default async function Home() {
-  const rawManufacturers = await prisma.manufacturer.findMany({
-    where: { models: { some: {} } },
-    include: { _count: { select: { models: true } } }
+  // Fetch all models with their manufacturer to group properly
+  const allModels = await prisma.carModel.findMany({
+    select: {
+      name: true,
+      commercialName: true,
+      manufacturer: { select: { id: true, name: true, country: true } }
+    }
   });
 
-  // Group by clean name so we don't show multiple "Volkswagen" (e.g. from Germany, Spain)
-  const groupedBrands = new Map<string, { id: number, name: string, count: number }>();
-  for (const m of rawManufacturers) {
-    const { name: cleanName } = cleanBrandName(m.name, m.country);
+  const groupedBrands = new Map<string, { id: number, name: string, uniqueModels: Set<string> }>();
+  
+  for (const model of allModels) {
+    const { name: cleanName } = cleanBrandName(model.manufacturer.name, model.manufacturer.country);
+    const displayName = model.commercialName || model.name;
+    
     if (!groupedBrands.has(cleanName)) {
-      groupedBrands.set(cleanName, { id: m.id, name: cleanName, count: m._count.models });
+      groupedBrands.set(cleanName, { 
+        id: model.manufacturer.id, 
+        name: cleanName, 
+        uniqueModels: new Set([displayName]) 
+      });
     } else {
-      const existing = groupedBrands.get(cleanName)!;
-      existing.count += m._count.models;
+      groupedBrands.get(cleanName)!.uniqueModels.add(displayName);
     }
   }
 
   const manufacturers = Array.from(groupedBrands.values())
+    .map(brand => ({ id: brand.id, name: brand.name, count: brand.uniqueModels.size }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 12);
 
