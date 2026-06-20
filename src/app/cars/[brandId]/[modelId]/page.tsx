@@ -79,6 +79,24 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
         )}
       </div>
 
+      {/* Extended Journalistic Specs / extraSpecs */}
+      {carModel.extraSpecs && Object.keys(carModel.extraSpecs as object).length > 0 && (
+        <div className="mb-12 glass-panel p-8 rounded-3xl">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-[#00ff9d]">
+            <span className="w-2 h-6 rounded-full bg-[#00ff9d]"></span>
+            מפרט טכני מלא (מורחב)
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-y-6 gap-x-4">
+            {Object.entries(carModel.extraSpecs as Record<string, string>).map(([key, val]) => (
+              <div key={key}>
+                <p className="text-sm text-gray-500 mb-1">{key}</p>
+                <p className="font-medium text-lg">{val}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Trims / Versions */}
       <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
         <span className="w-2 h-6 rounded-full bg-[#00ff9d]"></span>
