@@ -32,6 +32,9 @@ model CarModel {
   review         String?
   extraSpecs     Json?
   
+  reliabilityScore Int?
+  knownIssues      Json?
+  
   trims          TrimLevel[]
   activeVehicles ActiveVehicle[]
   recalls        Recall[]

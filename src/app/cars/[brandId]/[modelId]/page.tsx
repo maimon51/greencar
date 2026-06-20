@@ -97,6 +97,36 @@ export default async function CarModelPage({ params }: { params: Promise<{ brand
         </div>
       )}
 
+      {/* Reliability & Known Issues */}
+      {carModel.reliabilityScore && (
+        <div className="mb-12 glass-panel p-8 rounded-3xl border border-[#ff3b3b]/20">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-3 text-[#ff3b3b]">
+            <span className="w-2 h-6 rounded-full bg-[#ff3b3b]"></span>
+            אמינות ותקלות נפוצות
+          </h2>
+          <div className="flex flex-col md:flex-row gap-8 items-start">
+            <div className="flex-shrink-0 text-center p-6 bg-white/5 rounded-2xl border border-white/10 w-full md:w-auto">
+              <p className="text-sm text-gray-400 mb-2">ציון אמינות משוקלל</p>
+              <div className="text-5xl font-black text-white">
+                {carModel.reliabilityScore}<span className="text-2xl text-gray-500">/100</span>
+              </div>
+            </div>
+            <div className="flex-grow">
+              <h3 className="text-lg font-semibold mb-4">תקלות שדווחו (מבוסס רשת):</h3>
+              {carModel.knownIssues && Array.isArray(carModel.knownIssues) && carModel.knownIssues.length > 0 ? (
+                <ul className="list-disc list-inside space-y-2 text-gray-300">
+                  {(carModel.knownIssues as string[]).map((issue, idx) => (
+                    <li key={idx} className="marker:text-[#ff3b3b]">{issue}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">לא נמצאו תקלות סדרתיות נפוצות לרכב זה.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Trims / Versions */}
       <h2 className="text-2xl font-bold mb-6 flex items-center gap-3">
         <span className="w-2 h-6 rounded-full bg-[#00ff9d]"></span>
