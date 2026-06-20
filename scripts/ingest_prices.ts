@@ -29,34 +29,57 @@ async function run() {
     totalRecords += records.length;
     console.log(`Fetched ${records.length} price records. Processing...`);
 
+    // Fetch all CarModels into memory to avoid hitting the DB 32,000 times
+    const carModels = await prisma.carModel.findMany({
+      include: { manufacturer: true }
+    });
+    
+    // Create map of tozeret_cd_degem_cd -> carModel.id
+    const carModelMap = new Map<string, number>();
+    for (const cm of carModels) {
+      carModelMap.set(`${cm.manufacturer.code}_${cm.code}`, cm.id);
+    }
+
+    let batchData = [];
+
     // We process sequentially or in batches
     for (const record of records) {
       const { tozeret_cd, degem_cd, shnat_yitzur, mehir } = record;
       if (!mehir) continue;
 
-      // Find the CarModel based on tozeret_cd and degem_cd
-      const carModel = await prisma.carModel.findFirst({
-        where: {
-          code: degem_cd,
-          manufacturer: { code: tozeret_cd }
-        }
-      });
+      // Find the CarModel id from memory
+      const carModelId = carModelMap.get(`${tozeret_cd}_${degem_cd}`);
 
-      if (carModel) {
-        // Update all TrimLevels for this CarModel and Year
-        const res = await prisma.trimLevel.updateMany({
-          where: {
-            carModelId: carModel.id,
-            year: shnat_yitzur
-          },
-          data: {
-            msrp: mehir
-          }
-        });
-        if (res.count > 0) {
-          updatedCount += res.count;
+      if (carModelId) {
+        batchData.push(
+          prisma.trimLevel.updateMany({
+            where: {
+              carModelId: carModelId,
+              year: shnat_yitzur
+            },
+            data: {
+              msrp: mehir
+            }
+          })
+        );
+        
+        if (batchData.length >= 100) {
+           const resArr = await Promise.all(batchData);
+           for (const res of resArr) {
+             if (res.count > 0) updatedCount += res.count;
+           }
+           batchData = [];
+           // Sleep to prevent neon rate limiting
+           await new Promise(r => setTimeout(r, 100));
         }
       }
+    }
+    
+    if (batchData.length > 0) {
+       const resArr = await Promise.all(batchData);
+       for (const res of resArr) {
+         if (res.count > 0) updatedCount += res.count;
+       }
     }
     
     offset += records.length;
